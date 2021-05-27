@@ -8,10 +8,11 @@ const { Transaction, validate } = require("../models/transaction");
 router.get("/", [auth], async (req, res) => {
   try {
     const transactions = await Transaction.find().lean();
-    if (transactions.length > 0) res.send(transactions);
-    throw new Error("There are no transactions available.");
+    if (transactions.length > 0) {
+      res.send(transactions);
+    } else throw new Error("There are no transactions available.");
   } catch (error) {
-    res.status(404).send(error.message);
+    res.send(error.message);
   }
 });
 

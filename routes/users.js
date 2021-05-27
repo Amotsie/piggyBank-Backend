@@ -4,6 +4,7 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const express = require("express");
 const router = express.Router();
+const sendMail = require("../utils/sendEmail");
 const { validate, User } = require("../models/user");
 const Joi = require("joi");
 const auth = require("../middleware/auth");
@@ -48,8 +49,13 @@ router.delete("/:id", [auth, admin], async (req, res) => {
 });
 
 //Create new User
+// create 6 digit passwords automatically for the user and send email.
 router.post("/register", async (req, res) => {
+  // let newPassword = generatePassword();
+  // req.body = { ...req.body, password: newPassword };
+
   const { error } = validate(req.body);
+
   if (error) return res.status(400).send(error.details[0].message);
   try {
     let user = await User.findOne({ email: req.body.email });
@@ -71,18 +77,22 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
+    // createSendMail(user, newPassword);
     const token = user.generateAuthToken();
     res
       .header("x-auth-token", token)
       .send(_.pick(user, ["_id", "name", "surname", "email", "isAdmin"]));
   } catch (error) {
+    console.log(error.message);
     res.status(404).send(error.message);
   }
 });
 
 //Update User
-router.put("/:id", [auth], async (req, res) => {
+router.put("/:id", [auth, admin], async (req, res) => {
   const id = req.params.id;
+
+  console.log("PARAMS ID: ", id);
 
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -100,7 +110,7 @@ router.put("/:id", [auth], async (req, res) => {
 });
 
 function validateUser(user) {
-  console.log("validatinf..........");
+  console.log("validating..........");
   const schema = {
     name: Joi.string().min(2).max(50),
     surname: Joi.string().min(2).max(50),
@@ -109,6 +119,34 @@ function validateUser(user) {
   };
 
   return Joi.validate(user, schema);
+}
+
+function generatePassword() {
+  var text = "";
+  var possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < 5; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+function createSendMail(user, password) {
+  let options = {
+    to: user.email,
+    subject: "Smart Piggy-New Account.",
+    text:
+      `<h2>Welcome</h2> user.name` +
+      "\n A new accound has been created for you, your login details are as follows: \n" +
+      "username: your email Anddress \n" +
+      "password: " +
+      password +
+      "\n" +
+      "<i>Enjoy the app and happy savings..</i> 😀",
+  };
+
+  sendMail(options);
 }
 
 module.exports = router;

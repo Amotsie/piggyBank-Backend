@@ -1,4 +1,5 @@
 require("dotenv").config();
+const connectDB = require("./config/db");
 const mongoose = require("mongoose");
 const Joi = require("joi");
 const cors = require("cors");
@@ -9,10 +10,7 @@ const transactionsRouter = require("./routes/transactions");
 const auth = require("./routes/auth");
 const app = express();
 
-mongoose
-  .connect("mongodb://localhost/smartPiggy")
-  .then(() => console.log("connected to MongoDB 😎"))
-  .catch((err) => console.error("Could not connect to MongoDb..."));
+connectDB();
 
 app.use(cors());
 app.use(express.json());
@@ -29,5 +27,5 @@ app.get("/", (req, res) => {
 //OPEN Vault
 app.get("/api/vault", (req, res) => {});
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Listening on Port ${PORT}`));
