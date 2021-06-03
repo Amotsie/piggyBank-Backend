@@ -1,6 +1,5 @@
 require("dotenv").config();
 const connectDB = require("./config/db");
-const mongoose = require("mongoose");
 const Joi = require("joi");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -10,11 +9,11 @@ const transactionsRouter = require("./routes/transactions");
 const auth = require("./routes/auth");
 const app = express();
 
-connectDB();
-
 app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
+
+connectDB();
 
 app.use("/api/users", usersRouter);
 app.use("/api/transactions", transactionsRouter);
